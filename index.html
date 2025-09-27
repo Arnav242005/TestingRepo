@@ -26,5 +26,62 @@
   <!-- File opens inside iframe -->
   <iframe src="Application Properties.pdf"></iframe>
   <p>You can read this file here.</p>
+  <p>package com.arnav.testLeaflet.Service;
+
+import com.arnav.testLeaflet.Repository.LocationRepo;
+import com.arnav.testLeaflet.Repository.UserRepo;
+import com.arnav.testLeaflet.model.Location;
+import com.arnav.testLeaflet.model.Users;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+public class LocationService {
+
+    @Autowired
+    private LocationRepo repo;
+
+    @Autowired
+    private UserRepo userRepo; // You need to have this
+
+    public Location addMarker(Location marker) {
+        if (marker.getCreatedBy() == null || marker.getCreatedBy().getId() == null) {
+            throw new RuntimeException("User ID is required for createdBy");
+        }
+
+        Users user = userRepo.findById(marker.getCreatedBy().getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        marker.setCreatedBy(user);
+
+        return repo.save(marker);
+    }
+
+    public List<Location> getMarkerLocations() {
+        return repo.findAll();
+    }
+
+    public void deleteMarker(Long id) {
+        if(repo.existsById(id)){
+            repo.deleteById(id);
+        }else{
+            throw new RuntimeException("Not found with "+id);
+        }
+    }
+
+    public void verifyMarker(Long id) {
+        Location marker = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Marker not found with id: " + id));
+
+        marker.setStatus("VERIFIED");  // update status
+        repo.save(marker);
+    }
+}
+</p>
 </body>
 </html>
